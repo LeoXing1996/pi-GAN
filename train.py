@@ -5,10 +5,10 @@ import copy
 # import numpy as np
 import math
 import os
+import os.path as osp
 # from collections import deque
 import subprocess
 from datetime import datetime
-from wsgiref.util import setup_testing_defaults
 
 import torch
 import torch.distributed as dist
@@ -18,6 +18,7 @@ import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch_ema import ExponentialMovingAverage
 from torchvision.utils import save_image
+import wandb
 from tqdm import tqdm
 
 import curriculums
@@ -233,6 +234,12 @@ def train(opt):
         f.write('\n\n')
         f.write(str(curriculum))
 
+    wandb_log_dir = osp.join(opt.output_dir, 'wandb_log')
+    os.makedirs(wandb_log_dir, exist_ok=True)
+    wandb.init(dir=osp.join(opt.output_dir, 'wandb_log'),
+               name=opt.log_name,
+               project='pi-gan')
+
     torch.manual_seed(rank)
     dataloader = None
     total_progress_bar = tqdm(total=opt.n_epochs,
@@ -441,6 +448,10 @@ def train(opt):
                         f"[Img Size: {metadata['img_size']}] "
                         f"[Batch Size: {metadata['batch_size']}] "
                         f"[TopK: {topk_num}] [Scale: {scaler.get_scale()}]")
+                    wandb.log({'epochs': discriminator.epoch})
+                    wandb.log({'steps': discriminator.step})
+                    wandb.log({'d_loss': d_loss.item()})
+                    wandb.log({'g_loss': g_loss.item()})
 
                 if discriminator.step % opt.sample_interval == 0:
                     generator_ddp.eval()
@@ -485,12 +496,13 @@ def train(opt):
                             copied_metadata['img_size'] = 128
                             gen_imgs = generator_ddp.module.staged_forward(
                                 fixed_z.to(device), **copied_metadata)[0]
+                    fixed_ema_path = os.path.join(
+                        opt.output_dir, f"{discriminator.step}_fixed_ema.png")
                     save_image(gen_imgs[:25],
-                               os.path.join(
-                                   opt.output_dir,
-                                   f"{discriminator.step}_fixed_ema.png"),
+                               fixed_ema_path,
                                nrow=5,
                                normalize=True)
+                    wandb.log({'fixed_ema': wandb.Image(fixed_ema_path)})
 
                     with torch.no_grad():
                         with torch.cuda.amp.autocast():
@@ -501,12 +513,13 @@ def train(opt):
                             copied_metadata['img_size'] = 128
                             gen_imgs = generator_ddp.module.staged_forward(
                                 fixed_z.to(device), **copied_metadata)[0]
+                    tilted_ema_path = osp.join(
+                        opt.output_dir, f"{discriminator.step}_tilted_ema.png")
                     save_image(gen_imgs[:25],
-                               os.path.join(
-                                   opt.output_dir,
-                                   f"{discriminator.step}_tilted_ema.png"),
+                               tilted_ema_path,
                                nrow=5,
                                normalize=True)
+                    wandb.log({'tilted_ema': tilted_ema_path})
 
                     with torch.no_grad():
                         with torch.cuda.amp.autocast():
@@ -518,12 +531,13 @@ def train(opt):
                             gen_imgs = generator_ddp.module.staged_forward(
                                 torch.randn_like(fixed_z).to(device),
                                 **copied_metadata)[0]
+                    random_path = os.path.join(
+                        opt.output_dir, f"{discriminator.step}_random.png")
                     save_image(gen_imgs[:25],
-                               os.path.join(
-                                   opt.output_dir,
-                                   f"{discriminator.step}_random.png"),
+                               random_path,
                                nrow=5,
                                normalize=True)
+                    wandb.log({'random': random_path})
 
                     ema.restore(generator_ddp.parameters())
 
@@ -604,6 +618,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_save_interval', type=int, default=5000)
     parser.add_argument('--launcher', type=str)
     parser.add_argument('--local_rank', type=int)
+    parser.add_argument('--log_name', type=str)
 
     opt = parser.parse_args()
     print(opt)

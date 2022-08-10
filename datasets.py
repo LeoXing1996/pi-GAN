@@ -45,9 +45,15 @@ def load_file_list(path, client, file_list_path: FileClient = None):
 class CelebA(Dataset):
     """CelelebA Dataset"""
 
-    def __init__(self, dataset_path, img_size, file_client_args=None, **kwargs):
+    def __init__(self,
+                 dataset_path,
+                 img_size,
+                 file_client_args=None,
+                 **kwargs):
         super().__init__()
 
+        import ipdb
+        ipdb.set_trace()
         if file_client_args:
             self.client = FileClient(**file_client_args)
             self.data = load_file_list(dataset_path, self.client)

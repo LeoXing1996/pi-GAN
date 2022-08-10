@@ -42,6 +42,7 @@ Curriculum Schema:
     last_back: Flag to fill in background color with last sampled color on ray.
 """
 
+from copy import deepcopy
 import math
 
 
@@ -93,7 +94,8 @@ def extract_metadata(curriculum, current_step):
 
 CelebA = {
     0: {
-        'batch_size': 28 * 2,
+        # 'batch_size': 28 * 2,
+        'batch_size': 2,
         'num_steps': 12,
         'img_size': 64,
         'batch_split': 2,
@@ -188,6 +190,14 @@ CARLA = {
     'pos_lambda': 0,
     'learnable_dist': False,
 }
+
+CelebA_slurm = deepcopy(CelebA)
+CelebA_slurm['file_client_args'] = dict(
+    backend='petrel',
+    path_mapping={
+        './data/celeba':
+        'openmmlab:s3://openmmlab/dataset/editing/imagenet/train/'
+    })
 
 CATS = {
     0: {
