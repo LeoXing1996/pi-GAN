@@ -1,0 +1,7 @@
+checkpoint/
+*/__pycache__/
+__pycache__/
+imgs/
+vids/
+data/
+work_dirs/

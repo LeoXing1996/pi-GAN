@@ -44,24 +44,31 @@ Curriculum Schema:
 
 import math
 
+
 def next_upsample_step(curriculum, current_step):
     # Return the epoch when it will next upsample
     current_metadata = extract_metadata(curriculum, current_step)
     current_size = current_metadata['img_size']
-    for curriculum_step in sorted([cs for cs in curriculum.keys() if type(cs) == int]):
-        if curriculum_step > current_step and curriculum[curriculum_step].get('img_size', 512) > current_size:
+    for curriculum_step in sorted(
+        [cs for cs in curriculum.keys() if type(cs) == int]):
+        if curriculum_step > current_step and curriculum[curriculum_step].get(
+                'img_size', 512) > current_size:
             return curriculum_step
     return float('Inf')
+
 
 def last_upsample_step(curriculum, current_step):
     # Returns the start epoch of the current stage, i.e. the epoch
     # it last upsampled
     current_metadata = extract_metadata(curriculum, current_step)
     current_size = current_metadata['img_size']
-    for curriculum_step in sorted([cs for cs in curriculum.keys() if type(cs) == int]):
-        if curriculum_step <= current_step and curriculum[curriculum_step]['img_size'] == current_size:
+    for curriculum_step in sorted(
+        [cs for cs in curriculum.keys() if type(cs) == int]):
+        if curriculum_step <= current_step and curriculum[curriculum_step][
+                'img_size'] == current_size:
             return curriculum_step
     return 0
+
 
 def get_current_step(curriculum, epoch):
     step = 0
@@ -70,9 +77,11 @@ def get_current_step(curriculum, epoch):
             step += 1
     return step
 
+
 def extract_metadata(curriculum, current_step):
     return_dict = {}
-    for curriculum_step in sorted([cs for cs in curriculum.keys() if type(cs) == int], reverse=True):
+    for curriculum_step in sorted(
+        [cs for cs in curriculum.keys() if type(cs) == int], reverse=True):
         if curriculum_step <= current_step:
             for key, value in curriculum[curriculum_step].items():
                 return_dict[key] = value
@@ -83,18 +92,24 @@ def extract_metadata(curriculum, current_step):
 
 
 CelebA = {
-    0: {'batch_size': 28 * 2, 'num_steps': 12, 'img_size': 64, 'batch_split': 2, 'gen_lr': 6e-5, 'disc_lr': 2e-4},
+    0: {
+        'batch_size': 28 * 2,
+        'num_steps': 12,
+        'img_size': 64,
+        'batch_split': 2,
+        'gen_lr': 6e-5,
+        'disc_lr': 2e-4
+    },
     int(200e3): {},
-
-    'dataset_path': '/home/ericryanchan/data/celeba/img_align_celeba/*.jpg',
+    'dataset_path': './data/celeba/*.jpg',
     'fov': 12,
     'ray_start': 0.88,
     'ray_end': 1.12,
     'fade_steps': 10000,
     'h_stddev': 0.3,
     'v_stddev': 0.155,
-    'h_mean': math.pi*0.5,
-    'v_mean': math.pi*0.5,
+    'h_mean': math.pi * 0.5,
+    'v_mean': math.pi * 0.5,
     'sample_dist': 'gaussian',
     'topk_interval': 2000,
     'topk_v': 0.6,
@@ -118,11 +133,31 @@ CelebA = {
 }
 
 CARLA = {
-    0: {'batch_size': 30, 'num_steps': 48, 'img_size': 32, 'batch_split': 1, 'gen_lr': 4e-5, 'disc_lr': 4e-4},
-    int(10e3): {'batch_size': 14, 'num_steps': 48, 'img_size': 64, 'batch_split': 2, 'gen_lr': 2e-5, 'disc_lr': 2e-4},
-    int(55e3): {'batch_size': 10, 'num_steps': 48, 'img_size': 128, 'batch_split': 5, 'gen_lr': 10e-6, 'disc_lr': 10e-5},
+    0: {
+        'batch_size': 30,
+        'num_steps': 48,
+        'img_size': 32,
+        'batch_split': 1,
+        'gen_lr': 4e-5,
+        'disc_lr': 4e-4
+    },
+    int(10e3): {
+        'batch_size': 14,
+        'num_steps': 48,
+        'img_size': 64,
+        'batch_split': 2,
+        'gen_lr': 2e-5,
+        'disc_lr': 2e-4
+    },
+    int(55e3): {
+        'batch_size': 10,
+        'num_steps': 48,
+        'img_size': 128,
+        'batch_split': 5,
+        'gen_lr': 10e-6,
+        'disc_lr': 10e-5
+    },
     int(200e3): {},
-
     'dataset_path': '/home/marcorm/S-GAN/data/cats_bigger_than_128x128/*.jpg',
     'fov': 30,
     'ray_start': 0.7,
@@ -130,9 +165,9 @@ CARLA = {
     'fade_steps': 10000,
     'sample_dist': 'spherical_uniform',
     'h_stddev': math.pi,
-    'v_stddev': math.pi/4 * 85/90,
-    'h_mean': math.pi*0.5,
-    'v_mean': math.pi/4 * 85/90,
+    'v_stddev': math.pi / 4 * 85 / 90,
+    'h_mean': math.pi * 0.5,
+    'v_mean': math.pi / 4 * 85 / 90,
     'topk_interval': 1000,
     'topk_v': 1,
     'betas': (0, 0.9),
@@ -154,13 +189,16 @@ CARLA = {
     'learnable_dist': False,
 }
 
-
-
 CATS = {
-    0: {'batch_size': 28, 'num_steps': 24, 'img_size': 64, 'batch_split': 4, 'gen_lr': 6e-5, 'disc_lr': 2e-4},
+    0: {
+        'batch_size': 28,
+        'num_steps': 24,
+        'img_size': 64,
+        'batch_split': 4,
+        'gen_lr': 6e-5,
+        'disc_lr': 2e-4
+    },
     int(200e3): {},
-
-
     'dataset_path': '/home/ericryanchan/graf-beta/data/carla/carla/*.png',
     'fov': 12,
     'ray_start': 0.8,
@@ -168,8 +206,8 @@ CATS = {
     'fade_steps': 10000,
     'h_stddev': 0.5,
     'v_stddev': 0.4,
-    'h_mean': math.pi*0.5,
-    'v_mean': math.pi*0.5,
+    'h_mean': math.pi * 0.5,
+    'v_mean': math.pi * 0.5,
     'sample_dist': 'uniform',
     'topk_interval': 2000,
     'topk_v': 0.6,
