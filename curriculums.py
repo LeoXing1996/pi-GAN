@@ -95,7 +95,7 @@ def extract_metadata(curriculum, current_step):
 CelebA = {
     0: {
         # 'batch_size': 28 * 2,
-        'batch_size': 2,
+        'batch_size': 28,
         'num_steps': 12,
         'img_size': 64,
         'batch_split': 2,
@@ -192,12 +192,16 @@ CARLA = {
 }
 
 CelebA_slurm = deepcopy(CelebA)
+CelebA_slurm['dataset_path'] = './data/celeba'
 CelebA_slurm['file_client_args'] = dict(
     backend='petrel',
     path_mapping={
         './data/celeba':
-        'openmmlab:s3://openmmlab/dataset/editing/imagenet/train/'
+        's3://xingzhening/celeba'
     })
+
+CelebA_slurm_b56x2 = deepcopy(CelebA_slurm)
+CelebA_slurm_b56x2[0]['batch_size'] = 56
 
 CATS = {
     0: {

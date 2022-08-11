@@ -17,5 +17,4 @@ srun -p ${PARTITION} \
     --cpus-per-task=${CPUS_PER_TASK} \
     --kill-on-bad-exit=1 \
     ${SRUN_ARGS} \
-    python train.py --curriculum CelebA_slurm --output_dir ${WORK_DIR} --launcher slurm ${PY_ARGS}
-
+    python train.py --curriculum CelebA_slurm_b56x2 --output_dir ${WORK_DIR} --launcher slurm ${PY_ARGS}

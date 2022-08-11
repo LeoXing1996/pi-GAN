@@ -6,3 +6,5 @@ vids/
 data/
 work_dirs/
 debug/
+EvalImages/
+wandb/

@@ -29,15 +29,17 @@ def load_pil_with_client(path, client):
     return pil_image
 
 
-def load_file_list(path, client, file_list_path: FileClient = None):
-    if file_list_path is None:
+def load_file_list(path,
+                   client: FileClient = None,
+                   file_list_path: str = None):
+    if file_list_path is not None:
         # TODO:
         file_list = client.get_text(file_list_path)
     else:
         file_list = client.list_dir_or_file(path,
                                             list_dir=False,
                                             recursive=True,
-                                            suffix=['png', 'jpg'])
+                                            suffix=('png', 'jpg'))
     file_list = [osp.join(path, f) for f in file_list]
     return file_list
 
@@ -52,8 +54,6 @@ class CelebA(Dataset):
                  **kwargs):
         super().__init__()
 
-        import ipdb
-        ipdb.set_trace()
         if file_client_args:
             self.client = FileClient(**file_client_args)
             self.data = load_file_list(dataset_path, self.client)

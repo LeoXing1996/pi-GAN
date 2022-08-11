@@ -234,11 +234,11 @@ def train(opt):
         f.write('\n\n')
         f.write(str(curriculum))
 
-    wandb_log_dir = osp.join(opt.output_dir, 'wandb_log')
-    os.makedirs(wandb_log_dir, exist_ok=True)
-    wandb.init(dir=osp.join(opt.output_dir, 'wandb_log'),
-               name=opt.log_name,
-               project='pi-gan')
+    if rank == 0:
+        wandb_log_dir = osp.join(opt.output_dir, 'wandb_log')
+        os.makedirs(wandb_log_dir, exist_ok=True)
+        wandb.init(dir=osp.join(opt.output_dir, 'wandb_log'),
+                   name=opt.log_name, project='pi-gan')
 
     torch.manual_seed(rank)
     dataloader = None
@@ -572,7 +572,8 @@ def train(opt):
                 if rank == 0:
                     fid_evaluation.setup_evaluation(metadata['dataset'],
                                                     generated_dir,
-                                                    target_size=128)
+                                                    target_size=128,
+                                                    **metadata)
                 dist.barrier()
                 ema.store(generator_ddp.parameters())
                 ema.copy_to(generator_ddp.parameters())
@@ -585,6 +586,7 @@ def train(opt):
                     fid = fid_evaluation.calculate_fid(metadata['dataset'],
                                                        generated_dir,
                                                        target_size=128)
+                    wandb.log({'fid': fid.item()})
                     with open(os.path.join(opt.output_dir, f'fid.txt'),
                               'a') as f:
                         f.write(f'\n{discriminator.step}:{fid}')
